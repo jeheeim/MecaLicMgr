@@ -3,7 +3,8 @@
 //
 
 #pragma once
-
+#include "afxmenubutton.h"
+#include "afxwin.h"
 
 // CMecaLicMgrDlg 대화 상자
 class CMecaLicMgrDlg : public CDialogEx
@@ -42,4 +43,8 @@ public:
 	afx_msg void OnButtReadUser();
 	afx_msg void OnButtLicMake();
 	afx_msg void OnButtLicRead();
+private:
+//	CMFCMenuButton m_cApptype;
+//	CSplitButton m_cApptype;
+	CComboBox m_cApptype;
 };

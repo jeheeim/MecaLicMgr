@@ -15,6 +15,13 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 체크하면 12자리 6박스, 해제하면 8자리 4박스.
 */
 
+/*
+0710 app type 탭 기능 구현
+1. 프로그램이 실행되면 apptype.txt파일을 자동으로 읽어 프로그램의 종류를 파악하고
+
+2. app version 에 자동으로 버전들을 추가한다.
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -73,6 +80,9 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CHECK_IPV6, check_ipv);
+	//  DDX_Control(pDX, IDC_MENU_APPTYPE, m_cApptype);
+	//  DDX_Control(pDX, IDC_SPLIT_APPTYPE, m_cApptype);
+	DDX_Control(pDX, IDC_COMBO_APPTYPE, m_cApptype);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -122,8 +132,22 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
+	m_cApptype.SetWindowText("App Type");
+	
+	CStdioFile src_file;
 
+	// ""에 apptype.txt 의 경로를 넣을것.
+	src_file.Open("", CFile::modeRead);
 
+	CString str;
+
+	while (src_file.ReadString(str))
+	{
+		m_cApptype.AddString(str);
+	}
+
+	src_file.Close();
+	
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
