@@ -75,4 +75,7 @@ private:
 	CString macAdd4;
 	CString macAdd5;
 	CString macAdd6;
+public:
+	afx_msg void OnButtCompSaveAs();
+	afx_msg void OnButtUserSaveAs();
 };

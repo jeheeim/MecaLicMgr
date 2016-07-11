@@ -31,10 +31,11 @@ apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
 4. 열기/저장을 단일 메소드화함.(openOrSave 메소드)
 5. 전체 정보 읽기 구현.
 6. mac address 출력
+7. 회사 정보 save as 기능 추가
 
 to do
-save 기능 추가
-save as 기능 추가
+회사, 사용자 save 기능 추가
+사용자 save as 기능 추가
 */
 
 #include "stdafx.h"
@@ -167,6 +168,8 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_LIC_MAKE, &CMecaLicMgrDlg::OnButtLicMake)
 	ON_BN_CLICKED(IDC_BUTT_LIC_READ, &CMecaLicMgrDlg::OnButtLicRead)
 	ON_CBN_SELCHANGE(IDC_COMBO_APPTYPE, &CMecaLicMgrDlg::OnCbxApptype)
+	ON_BN_CLICKED(IDC_BUTT_COMP_SAVE_AS, &CMecaLicMgrDlg::OnButtCompSaveAs)
+	ON_BN_CLICKED(IDC_BUTT_USER_SAVE_AS, &CMecaLicMgrDlg::OnButtUserSaveAs)
 END_MESSAGE_MAP()
 
 
@@ -206,7 +209,7 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 	// 주소의 공통부분인 배열 baseAddress 설정,
 	// apptype.txt, appversion.txt가 위치한 폴더,
 	// 회사 정보파일 폴더, 사용자 정보파일 폴더
-	baseAddress = "C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\";
+	baseAddress = "C:\\Users\\Jay\\Desktop\\data\\";
 	apptypeAddress = baseAddress + "application\\apptype.txt";
 	appVerAddresss = baseAddress + "application\\version\\";
 	compDataAddress = baseAddress + "license\\comp";
@@ -515,4 +518,43 @@ void CMecaLicMgrDlg::printMacAdd(CString macAddress)
 	macAdd6 = macAddress.Mid(15, 2);
 
 	UpdateData(FALSE);
+}
+
+void CMecaLicMgrDlg::OnButtCompSaveAs()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CString compDataPath;
+	CFileException ex;
+	CString writeStr[7];
+
+	compDataPath = openOrSave(FALSE, compDataAddress);
+
+	CStdioFile compFile;
+	
+	compFile.Open(compDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
+
+	UpdateData(true);
+
+	writeStr[0] = "Company Name: " + compName + "\n";
+	writeStr[1] = "Company Code: " + compCode + "\n";
+	writeStr[2] = "Company  TEL: " + compPhone + "\n";
+	writeStr[3] = "Admin   Name: " + compMngName + "\n";
+	writeStr[4] = "Admin e-mail: " + compMngEmail + "\n";
+	writeStr[5] = "Admin Mobile: " + compMngCell + "\n";
+	writeStr[6] = "Comp.Remarks: " + compRemarks + "\n";
+
+	for (int i = 0; i < 7; i++)
+	{
+		compFile.WriteString(writeStr[i]);
+	}
+
+	compFile.Close();
+
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
+}
+
+
+void CMecaLicMgrDlg::OnButtUserSaveAs()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 }
