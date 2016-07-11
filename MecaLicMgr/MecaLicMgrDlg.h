@@ -68,4 +68,11 @@ private:
 	COleDateTime userEnd;
 	
 	CString openOrSave(BOOL isOpen, CString address);
+	void printMacAdd(CString macAddress);
+	CString macAdd1;
+	CString macAdd2;
+	CString macAdd3;
+	CString macAdd4;
+	CString macAdd5;
+	CString macAdd6;
 };

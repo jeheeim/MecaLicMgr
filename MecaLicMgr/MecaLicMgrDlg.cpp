@@ -28,21 +28,13 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
 2. 회사 정보파일 불러오기
 3. 사용자 정보파일 불러오기
+4. 열기/저장을 단일 메소드화함.(openOrSave 메소드)
+5. 전체 정보 읽기 구현.
+6. mac address 출력
 
 to do
-1. 전체정보 읽기 기능 추가
-2. save 기능 추가
-3. save as 기능 추가
-*/
-
-/*
-0711
-1. 열기/저장을 단일 메소드화함.(openOrSave 메소드)
-2. 전체 정보 읽기 구현.
-
-to do
-1. mac address 출력
-2. save as
+save 기능 추가
+save as 기능 추가
 */
 
 #include "stdafx.h"
@@ -110,6 +102,12 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	, userPhone(_T(""))
 	, userRemarks(_T(""))
 	, userEnd(COleDateTime::GetCurrentTime())
+	, macAdd1(_T(""))
+	, macAdd2(_T(""))
+	, macAdd3(_T(""))
+	, macAdd4(_T(""))
+	, macAdd5(_T(""))
+	, macAdd6(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	baseAddress = _T("");
@@ -143,6 +141,18 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userStart);
 	DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userEnd);
 	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_START, userStart);
+	DDX_Text(pDX, IDC_EDIT_MAC1, macAdd1);
+	DDV_MaxChars(pDX, macAdd1, 2);
+	DDX_Text(pDX, IDC_EDIT_MAC2, macAdd2);
+	DDV_MaxChars(pDX, macAdd2, 2);
+	DDX_Text(pDX, IDC_EDIT_MAC3, macAdd3);
+	DDV_MaxChars(pDX, macAdd3, 2);
+	DDX_Text(pDX, IDC_EDIT_MAC4, macAdd4);
+	DDV_MaxChars(pDX, macAdd4, 2);
+	DDX_Text(pDX, IDC_EDIT_MAC5, macAdd5);
+	DDV_MaxChars(pDX, macAdd5, 2);
+	DDX_Text(pDX, IDC_EDIT_MAC6, macAdd6);
+	DDV_MaxChars(pDX, macAdd6, 2);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -307,7 +317,7 @@ void CMecaLicMgrDlg::OnClickIpv6()
 // 전체 정보 읽기 버튼.
 void CMecaLicMgrDlg::OnButtReadAll()
 {
-	CString allInfo[14];
+	CString allInfo[15];
 
 	int i = 0;
 
@@ -326,7 +336,7 @@ void CMecaLicMgrDlg::OnButtReadAll()
 
 	allFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
 
-	while (i<14)
+	while (i<15)
 	{
 		allFile.ReadString(allInfo[i]);
 
@@ -351,6 +361,8 @@ void CMecaLicMgrDlg::OnButtReadAll()
 	userEmail = allInfo[11].Mid(14);
 	userEnd.ParseDateTime(allInfo[12].Mid(14));
 	userRemarks = allInfo[13].Mid(14);
+
+	printMacAdd(allInfo[14].Mid(14));
 
 	UpdateData(FALSE);
 }
@@ -425,6 +437,8 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	userEnd.ParseDateTime(userInfo[5].Mid(14));
 	userRemarks = userInfo[6].Mid(14);
 
+	printMacAdd(userInfo[7].Mid(14));
+
 	UpdateData(FALSE);
 }
 
@@ -489,4 +503,16 @@ void CMecaLicMgrDlg::OnCbxApptype()
 	}
 
 	src_file.Close();
+}
+
+void CMecaLicMgrDlg::printMacAdd(CString macAddress)
+{
+	macAdd1 = macAddress.Left(2);
+	macAdd2 = macAddress.Mid(3, 2);
+	macAdd3 = macAddress.Mid(6, 2);
+	macAdd4 = macAddress.Mid(9, 2);
+	macAdd5 = macAddress.Mid(12, 2);
+	macAdd6 = macAddress.Mid(15, 2);
+
+	UpdateData(FALSE);
 }
