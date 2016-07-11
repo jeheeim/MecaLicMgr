@@ -65,7 +65,7 @@ private:
 	CString userName;
 	CString userPhone;
 	CString userRemarks;
-//	COleDateTime userStart;
 	COleDateTime userEnd;
-//	COleDateTime userStart;
+	
+	CString openOrSave(BOOL isOpen, CString address);
 };
