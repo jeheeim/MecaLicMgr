@@ -23,12 +23,26 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 */
 
 /*
-0711 파일 입출력시 파일주소 위치 변수화
-1. apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
+0711
+1. 파일 입출력시 파일주소 위치 변수화
+apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
+2. 회사 정보파일 불러오기
+3. 사용자 정보파일 불러오기
+
+to do
+1. 전체정보 읽기 기능 추가
+2. save 기능 추가
+3. save as 기능 추가
 */
 
 /*
-0711 회사 정보파일 불러오기
+0711
+1. 열기/저장을 단일 메소드화함.(openOrSave 메소드)
+2. 전체 정보 읽기 구현.
+
+to do
+1. mac address 출력
+2. save as
 */
 
 #include "stdafx.h"
@@ -89,6 +103,13 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	, compMngName(_T(""))
 	, compName(_T(""))
 	, compPhone(_T(""))
+	, userCell(_T(""))
+	, userDept(_T(""))
+	, userEmail(_T(""))
+	, userName(_T(""))
+	, userPhone(_T(""))
+	, userRemarks(_T(""))
+	, userEnd(COleDateTime::GetCurrentTime())
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	baseAddress = _T("");
@@ -113,6 +134,15 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_COMP_MNG_NAME, compMngName);
 	DDX_Text(pDX, IDC_EDIT_COMP_NAME, compName);
 	DDX_Text(pDX, IDC_EDIT_COMP_PHONE, compPhone);
+	DDX_Text(pDX, IDC_EDIT_USER_CELL, userCell);
+	DDX_Text(pDX, IDC_EDIT_USER_DEPT, userDept);
+	DDX_Text(pDX, IDC_EDIT_USER_EMAIL, userEmail);
+	DDX_Text(pDX, IDC_EDIT_USER_NAME, userName);
+	DDX_Text(pDX, IDC_EDIT_USER_PHONE, userPhone);
+	DDX_Text(pDX, IDC_EDIT_USER_REMARKS, userRemarks);
+	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userStart);
+	DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userEnd);
+	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_START, userStart);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -277,20 +307,52 @@ void CMecaLicMgrDlg::OnClickIpv6()
 // 전체 정보 읽기 버튼.
 void CMecaLicMgrDlg::OnButtReadAll()
 {
-	BOOL bTrue = FALSE;
-	CString strTemp;
+	CString allInfo[14];
 
-	// txt파일. 라이센스 파일로 수정필요
-	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
+	int i = 0;
 
-	if (dlgFileOpen.DoModal() == IDOK)
+	CStdioFile allFile;
+	
+	allFile.Open(openOrSave(true, compDataAddress), CFile::modeRead);
+
+	while (i<7)
 	{
-		MessageBox("전체 파일을 여는데 성공했습니다!", "성공", NULL);
+		allFile.ReadString(allInfo[i]);
+
+		i++;
 	}
-	else
+
+	allFile.Close();
+
+	allFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
+
+	while (i<14)
 	{
-		MessageBox("전체 파일을 여는데 실패했습니다!", "실패", NULL);
+		allFile.ReadString(allInfo[i]);
+
+		i++;
 	}
+
+	allFile.Close();
+
+	// 화면에 출력하기
+	compName = allInfo[0].Mid(14);
+	compCode = allInfo[1].Mid(14);
+	compPhone = allInfo[2].Mid(14);
+	compMngName = allInfo[3].Mid(14);
+	compMngEmail = allInfo[4].Mid(14);
+	compMngCell = allInfo[5].Mid(14);
+	compRemarks = allInfo[6].Mid(14);
+
+	userDept = allInfo[7].Mid(14);
+	userName = allInfo[8].Mid(14);
+	userPhone = allInfo[9].Mid(14);
+	userCell = allInfo[10].Mid(14);
+	userEmail = allInfo[11].Mid(14);
+	userEnd.ParseDateTime(allInfo[12].Mid(14));
+	userRemarks = allInfo[13].Mid(14);
+
+	UpdateData(FALSE);
 }
 
 // 회사 정보 읽기 버튼. 회사정보 파일에서 정보를 읽어와 앞부분을 잘라낸 뒤에
@@ -298,24 +360,7 @@ void CMecaLicMgrDlg::OnButtReadAll()
 void CMecaLicMgrDlg::OnButtReadComp()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-
-	BOOL bTrue = FALSE;
-	CString strTemp;
-
-	// 열기창. txt파일과 모든파일중에 선택할 수 있다.
-	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
-
-	// 읽기 창의 기본위치 지정
-	dlgFileOpen.m_ofn.lpstrInitialDir = compDataAddress;
-
-	// 실패시 실패 문구 띄움.
-	if (dlgFileOpen.DoModal() != IDOK)
-	{
-		MessageBox("회사 파일을 여는데 실패했습니다!", "실패", NULL);
-
-		return;
-	}
-
+		
 	// 파일에서 입력받을 정보배열
 	CString compInfo[7];
 
@@ -323,7 +368,8 @@ void CMecaLicMgrDlg::OnButtReadComp()
 
 	CStdioFile compFile;
 
-	compFile.Open(dlgFileOpen.GetPathName(), CFile::modeRead);
+	// openOrSave 함수는 true 값을 입력받았을때 열기창을 실행하고 선택한 파일의 주소를 리턴한다.
+	compFile.Open(openOrSave(true, compDataAddress), CFile::modeRead);
 
 	while (i<7)
 	{
@@ -350,24 +396,36 @@ void CMecaLicMgrDlg::OnButtReadComp()
 void CMecaLicMgrDlg::OnButtReadUser()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	
+	// 파일에서 입력받을 정보배열
+	CString userInfo[9];
 
-	BOOL bTrue = FALSE;
-	CString strTemp;
+	int i = 0;
 
-	// 열기창. txt파일과 모든파일중에 선택할 수 있다.
-	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
+	CStdioFile userFile;
 
-	// 유저폴더.
-	dlgFileOpen.m_ofn.lpstrInitialDir = userDataAddress;
+	// openOrSave 함수는 true 값을 입력받았을때 열기창을 실행하고 선택한 파일의 주소를 리턴한다.
+	userFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
 
-	if (dlgFileOpen.DoModal() == IDOK)
+	while (i<9)
 	{
-		MessageBox("사용자 파일을 여는데 성공했습니다!", "성공", NULL);
+		userFile.ReadString(userInfo[i]);
+
+		i++;
 	}
-	else
-	{
-		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
-	}
+
+	userFile.Close();
+
+	// 화면에 출력하기
+	userDept = userInfo[0].Mid(14);
+	userName = userInfo[1].Mid(14);
+	userPhone = userInfo[2].Mid(14);
+	userCell = userInfo[3].Mid(14);
+	userEmail = userInfo[4].Mid(14);
+	userEnd.ParseDateTime(userInfo[5].Mid(14));
+	userRemarks = userInfo[6].Mid(14);
+
+	UpdateData(FALSE);
 }
 
 
@@ -384,6 +442,26 @@ void CMecaLicMgrDlg::OnButtLicRead()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 	MessageBox("라이센스를 불러옵니다.", "읽기", NULL);
+}
+
+// 열기 혹은 저장을 수행하는 메소드. isOpen의 값이 true면 열기, false면 저장한다.
+CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
+{
+	// 열기 / 저장창. txt파일과 모든파일중에 선택할 수 있다.
+	// true면 열기, false 면 저장한다.
+	CFileDialog dlgFileOpen(isOpen, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
+
+	// 유저폴더.
+	dlgFileOpen.m_ofn.lpstrInitialDir = address;
+
+	if (dlgFileOpen.DoModal() != IDOK)
+	{
+		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
+
+		return NULL;
+	}
+
+	return dlgFileOpen.GetPathName();
 }
 
 // 어플리케이션 종류를 선택하면 실행되는 함수
