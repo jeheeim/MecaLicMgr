@@ -52,4 +52,9 @@ public:
 	afx_msg void OnCbxApptype();
 private:
 	CString m_strCbxApptype;
+	CString baseAddress;
+	CString apptypeAddress;
+	CString compDataAddress;
+	CString userDataAddress;
+	CString appVerAddresss;
 };

@@ -22,6 +22,11 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 2. app version 에 자동으로 버전들을 추가한다.
 */
 
+/*
+0711 파일 입출력시 파일주소 위치 변수화
+1. apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -75,6 +80,11 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	, m_strCbxApptype(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	baseAddress = _T("");
+	apptypeAddress = _T("");
+	compDataAddress = _T("");
+	userDataAddress = _T("");
+	appVerAddresss = _T("");
 }
 
 void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
@@ -135,10 +145,20 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 	
+	// 주소의 공통부분인 배열 baseAddress 설정,
+	// apptype.txt, appversion.txt가 위치한 폴더,
+	// 회사 정보파일 폴더, 사용자 정보파일 폴더
+	baseAddress = "C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\";
+	apptypeAddress = baseAddress + "application\\apptype.txt";
+	appVerAddresss = baseAddress + "application\\version\\";
+	compDataAddress = baseAddress + "license\\comp";
+	userDataAddress = baseAddress + "license\\user";
+
+	// app type 콤보박스를 위해 apptype.txt파일 읽어오기.
 	CStdioFile src_file;
 
 	// 파일경로는 기본 변수로 따로 만들것
-	src_file.Open("C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\application\\apptype.txt", CFile::modeRead);
+	src_file.Open(apptypeAddress, CFile::modeRead);
 
 	CString str;
 
@@ -266,15 +286,16 @@ void CMecaLicMgrDlg::OnButtReadComp()
 	// 열기창. txt파일과 모든파일중에 선택할 수 있다.
 	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
 
-	dlgFileOpen.m_ofn.lpstrInitialDir = (LPSTR)("C:\\Users\\jay\\Desktop\\MecaLicMgr\\data\\license\\comp");
+	// 읽기 창의 기본위치 지정
+	dlgFileOpen.m_ofn.lpstrInitialDir = compDataAddress;
 
 	if (dlgFileOpen.DoModal() == IDOK)
 	{
-		MessageBox("전체 파일을 여는데 성공했습니다!", "성공", NULL);
+		MessageBox("회사 파일을 여는데 성공했습니다!", "성공", NULL);
 	}
 	else
 	{
-		MessageBox("전체 파일을 여는데 실패했습니다!", "실패", NULL);
+		MessageBox("회사 파일을 여는데 실패했습니다!", "실패", NULL);
 	}
 }
 
@@ -290,15 +311,15 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
 
 	// 유저폴더.
-	dlgFileOpen.m_ofn.lpstrInitialDir = (LPSTR)("C:\\Users\\jay\\Desktop\\MecaLicMgr\\data\\license\\user");
+	dlgFileOpen.m_ofn.lpstrInitialDir = userDataAddress;
 
 	if (dlgFileOpen.DoModal() == IDOK)
 	{
-		MessageBox("전체 파일을 여는데 성공했습니다!", "성공", NULL);
+		MessageBox("사용자 파일을 여는데 성공했습니다!", "성공", NULL);
 	}
 	else
 	{
-		MessageBox("전체 파일을 여는데 실패했습니다!", "실패", NULL);
+		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
 	}
 }
 
@@ -330,10 +351,10 @@ void CMecaLicMgrDlg::OnCbxApptype()
 
 	CStdioFile src_file;
 	
-	CString address = "C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\application\\version\\" + m_strCbxApptype + ".txt";
+	CString fileAddress = appVerAddresss + m_strCbxApptype + ".txt";
 
 	// 파일경로는 기본 변수로 따로 만들것
-	src_file.Open(address, CFile::modeRead);
+	src_file.Open(fileAddress, CFile::modeRead);
 
 	CString str;
 
