@@ -13,9 +13,7 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 
 4. ipv6 체크박스 메소드
 체크하면 12자리 6박스, 해제하면 8자리 4박스.
-*/
 
-/*
 0710 app type 탭 기능 구현
 1. 프로그램이 실행되면 apptype.txt파일을 자동으로 읽어 프로그램의 종류를 파악하고
 
@@ -31,11 +29,14 @@ apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
 4. 열기/저장을 단일 메소드화함.(openOrSave 메소드)
 5. 전체 정보 읽기 구현.
 6. mac address 출력
-7. 회사 정보 save as 기능 추가
+7. 회사, 사용자 정보 save as 기능 추가
+8. mac address 길이에 따라 ipv6 체크
+9. 전체 save as 기능 추가
 
 to do
 회사, 사용자 save 기능 추가
-사용자 save as 기능 추가
+license type 물어볼것
+tab 순서 설정
 */
 
 #include "stdafx.h"
@@ -154,6 +155,7 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, macAdd5, 2);
 	DDX_Text(pDX, IDC_EDIT_MAC6, macAdd6);
 	DDV_MaxChars(pDX, macAdd6, 2);
+	//  DDX_Control(pDX, IDC_CHECK_IPV6, idc_check_ipv);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -170,6 +172,8 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_CBN_SELCHANGE(IDC_COMBO_APPTYPE, &CMecaLicMgrDlg::OnCbxApptype)
 	ON_BN_CLICKED(IDC_BUTT_COMP_SAVE_AS, &CMecaLicMgrDlg::OnButtCompSaveAs)
 	ON_BN_CLICKED(IDC_BUTT_USER_SAVE_AS, &CMecaLicMgrDlg::OnButtUserSaveAs)
+	ON_BN_CLICKED(IDC_BUTT_SAVE_ALL, &CMecaLicMgrDlg::OnButtAllSave)
+	ON_BN_CLICKED(IDC_BUTT_SAVE_AS_ALL, &CMecaLicMgrDlg::OnButtAllSaveAs)
 END_MESSAGE_MAP()
 
 
@@ -481,6 +485,7 @@ CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
 	return dlgFileOpen.GetPathName();
 }
 
+
 // 어플리케이션 종류를 선택하면 실행되는 함수
 // 매번 앱 버젼을 초기화하고 선택한 어플리케이션의 버전 목록파일을 읽어들여
 // 버전을 선택할 수 있는 콤보박스에 저장한다.
@@ -510,24 +515,63 @@ void CMecaLicMgrDlg::OnCbxApptype()
 
 void CMecaLicMgrDlg::printMacAdd(CString macAddress)
 {
-	macAdd1 = macAddress.Left(2);
-	macAdd2 = macAddress.Mid(3, 2);
-	macAdd3 = macAddress.Mid(6, 2);
-	macAdd4 = macAddress.Mid(9, 2);
-	macAdd5 = macAddress.Mid(12, 2);
-	macAdd6 = macAddress.Mid(15, 2);
+	if(macAddress.GetLength() >= 17)
+	{
+		macAdd1 = macAddress.Left(2);
+		macAdd2 = macAddress.Mid(3, 2);
+		macAdd3 = macAddress.Mid(6, 2);
+		macAdd4 = macAddress.Mid(9, 2);
+		macAdd5 = macAddress.Mid(12, 2);
+		macAdd6 = macAddress.Mid(15, 2);
+
+		check_ipv = true;
+	}
+	else
+	{
+		macAdd1 = macAddress.Left(2);
+		macAdd2 = macAddress.Mid(3, 2);
+		macAdd3 = macAddress.Mid(6, 2);
+		macAdd4 = macAddress.Mid(9, 2);
+
+		check_ipv = false;
+	}
 
 	UpdateData(FALSE);
+
+	UpdateData(TRUE);
+
+	if (check_ipv)
+	{
+		GetDlgItem(IDC_EDIT_MAC5)->ShowWindow(TRUE);
+		GetDlgItem(IDC_EDIT_MAC6)->ShowWindow(TRUE);
+		GetDlgItem(IDC_STATIC_MAC_BAR4)->ShowWindow(TRUE);
+		GetDlgItem(IDC_STATIC_MAC_BAR5)->ShowWindow(TRUE);
+	}
+}
+
+CString CMecaLicMgrDlg::getMacAdd(void)
+{
+	CString result;
+
+	UpdateData(TRUE);
+
+	result = macAdd1 + "-" + macAdd2 + "-" + macAdd3 + "-" + macAdd4 + "-" + macAdd5 + "-" + macAdd6;
+
+	return result;
 }
 
 void CMecaLicMgrDlg::OnButtCompSaveAs()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CString compDataPath;
 	CFileException ex;
 	CString writeStr[7];
 
 	compDataPath = openOrSave(FALSE, compDataAddress);
+
+	if (!compDataPath)
+	{
+		return;
+	}
 
 	CStdioFile compFile;
 	
@@ -556,5 +600,120 @@ void CMecaLicMgrDlg::OnButtCompSaveAs()
 
 void CMecaLicMgrDlg::OnButtUserSaveAs()
 {
+	CString userDataPath;
+	CFileException ex;
+	CString writeStr[9];
+
+	CString userMacAdd = getMacAdd();
+	CString userLicType;
+
+	userDataPath = openOrSave(FALSE, userDataAddress);
+
+	if (!userDataPath)
+	{
+		return;
+	}
+
+	UpdateData(true);
+
+	writeStr[0] = "User   Dept.: " + userDept + "\n";
+	writeStr[1] = "User   Name : " + userName + "\n";
+	writeStr[2] = "User   Phone: " + userPhone + "\n";
+	writeStr[3] = "User  Mobile: " + userCell + "\n";
+	writeStr[4] = "User  e-mail: " + userEmail + "\n";
+	writeStr[5] = "Lic. Enddate: " + userEnd.Format(_T("%Y/%m/%d")) + "\n";
+	writeStr[6] = "User Remarks: " + userRemarks + "\n";
+	writeStr[7] = "MAC  Address: " + userMacAdd + "\n";
+	writeStr[8] = "License Type: " + userLicType + "\n";
+
+	CStdioFile userFile;
+
+	userFile.Open(userDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
+
+	for (int i = 0; i < 8; i++)
+	{
+		userFile.WriteString(writeStr[i]);
+	}
+
+	userFile.Close();
+
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
+}
+
+
+void CMecaLicMgrDlg::OnButtAllSave()
+{
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	MessageBox("전체 save를 실시합니다.","알림",NULL);
+}
+
+
+void CMecaLicMgrDlg::OnButtAllSaveAs()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	CString allDataPath;
+	CFileException ex;
+	CString writeStr[9];
+	CStdioFile allFile;
+
+	allDataPath = openOrSave(FALSE, compDataAddress);
+
+	if (!allDataPath)
+	{
+		return;
+	}
+
+	allFile.Open(allDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
+
+	UpdateData(true);
+
+	writeStr[0] = "Company Name: " + compName + "\n";
+	writeStr[1] = "Company Code: " + compCode + "\n";
+	writeStr[2] = "Company  TEL: " + compPhone + "\n";
+	writeStr[3] = "Admin   Name: " + compMngName + "\n";
+	writeStr[4] = "Admin e-mail: " + compMngEmail + "\n";
+	writeStr[5] = "Admin Mobile: " + compMngCell + "\n";
+	writeStr[6] = "Comp.Remarks: " + compRemarks + "\n";
+
+	for (int i = 0; i < 7; i++)
+	{
+		allFile.WriteString(writeStr[i]);
+	}
+
+	allFile.Close();
+
+	CString userMacAdd = getMacAdd();
+	CString userLicType;
+
+	allDataPath = openOrSave(FALSE, userDataAddress);
+
+	if (!allDataPath)
+	{
+		return;
+	}
+
+	UpdateData(true);
+
+	writeStr[0] = "User   Dept.: " + userDept + "\n";
+	writeStr[1] = "User   Name : " + userName + "\n";
+	writeStr[2] = "User   Phone: " + userPhone + "\n";
+	writeStr[3] = "User  Mobile: " + userCell + "\n";
+	writeStr[4] = "User  e-mail: " + userEmail + "\n";
+	writeStr[5] = "Lic. Enddate: " + userEnd.Format(_T("%Y/%m/%d")) + "\n";
+	writeStr[6] = "User Remarks: " + userRemarks + "\n";
+	writeStr[7] = "MAC  Address: " + userMacAdd + "\n";
+	writeStr[8] = "License Type: " + userLicType + "\n";
+
+	allFile.Open(allDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
+
+	for (int i = 0; i < 8; i++)
+	{
+		allFile.WriteString(writeStr[i]);
+	}
+
+	allFile.Close();
+
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
 }
