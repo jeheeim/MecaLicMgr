@@ -1,0 +1,9 @@
+User   Dept.: Technical Support Team(MCAD)
+User   Name : Son
+User   Phone: 031-715-7921
+User  Mobile: -
+User  e-mail: son@mecasol.co.kr
+Lic. Enddate: 2016/09/30
+User Remarks: -
+MAC  Address: 30-5A-3A-06-2B-77
+License Type: 10000

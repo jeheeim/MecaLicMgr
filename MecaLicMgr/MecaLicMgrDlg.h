@@ -35,26 +35,27 @@ protected:
 public:
 	afx_msg void OnButtExit();
 	afx_msg void OnClickIpv6();
-private:
-	BOOL check_ipv;
-public:
+	afx_msg void OnCbxApptype();
 	afx_msg void OnButtReadAll();
 	afx_msg void OnButtReadComp();
 	afx_msg void OnButtReadUser();
 	afx_msg void OnButtLicMake();
 	afx_msg void OnButtLicRead();
 private:
-public:
-	CComboBox m_cApptype;
-private:
+	BOOL check_ipv;
 	CComboBox m_cVersion;
-public:
-	afx_msg void OnCbxApptype();
-private:
+	CComboBox m_cApptype;
 	CString m_strCbxApptype;
 	CString baseAddress;
 	CString apptypeAddress;
 	CString compDataAddress;
 	CString userDataAddress;
 	CString appVerAddresss;
+	CString compCode;
+	CString compRemarks;
+	CString compMngCell;
+	CString compMngEmail;
+	CString compMngName;
+	CString compName;
+	CString compPhone;
 };

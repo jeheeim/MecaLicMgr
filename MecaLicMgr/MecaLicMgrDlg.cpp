@@ -27,6 +27,10 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 1. apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
 */
 
+/*
+0711 회사 정보파일 불러오기
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -78,6 +82,13 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MECALICMGR_DIALOG, pParent)
 	, check_ipv(FALSE)
 	, m_strCbxApptype(_T(""))
+	, compCode(_T(""))
+	, compRemarks(_T(""))
+	, compMngCell(_T(""))
+	, compMngEmail(_T(""))
+	, compMngName(_T(""))
+	, compName(_T(""))
+	, compPhone(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	baseAddress = _T("");
@@ -95,6 +106,13 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	//  DDX_CBString(pDX, IDC_COMBO_APPTYPE, apptypeSel);
 	DDX_Control(pDX, IDC_COMBO_VERSION, m_cVersion);
 	DDX_CBString(pDX, IDC_COMBO_APPTYPE, m_strCbxApptype);
+	DDX_Text(pDX, IDC_EDIT_COMP_CODE, compCode);
+	DDX_Text(pDX, IDC_EDIT_COMP_EXTRA, compRemarks);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_CELL, compMngCell);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_EMAIL, compMngEmail);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_NAME, compMngName);
+	DDX_Text(pDX, IDC_EDIT_COMP_NAME, compName);
+	DDX_Text(pDX, IDC_EDIT_COMP_PHONE, compPhone);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -275,7 +293,8 @@ void CMecaLicMgrDlg::OnButtReadAll()
 	}
 }
 
-// 회사 정보 읽기 버튼.
+// 회사 정보 읽기 버튼. 회사정보 파일에서 정보를 읽어와 앞부분을 잘라낸 뒤에
+// 불필요한 부분을 trim하고 화면에 띄운다.
 void CMecaLicMgrDlg::OnButtReadComp()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -289,14 +308,42 @@ void CMecaLicMgrDlg::OnButtReadComp()
 	// 읽기 창의 기본위치 지정
 	dlgFileOpen.m_ofn.lpstrInitialDir = compDataAddress;
 
-	if (dlgFileOpen.DoModal() == IDOK)
-	{
-		MessageBox("회사 파일을 여는데 성공했습니다!", "성공", NULL);
-	}
-	else
+	// 실패시 실패 문구 띄움.
+	if (dlgFileOpen.DoModal() != IDOK)
 	{
 		MessageBox("회사 파일을 여는데 실패했습니다!", "실패", NULL);
+
+		return;
 	}
+
+	// 파일에서 입력받을 정보배열
+	CString compInfo[7];
+
+	int i = 0;
+
+	CStdioFile compFile;
+
+	compFile.Open(dlgFileOpen.GetPathName(), CFile::modeRead);
+
+	while (i<7)
+	{
+		compFile.ReadString(compInfo[i]);
+
+		i++;
+	}
+
+	compFile.Close();
+
+	// 화면에 출력하기
+	compName = compInfo[0].Mid(14);
+	compCode = compInfo[1].Mid(14);
+	compPhone = compInfo[2].Mid(14);
+	compMngName = compInfo[3].Mid(14);
+	compMngEmail = compInfo[4].Mid(14);
+	compMngCell = compInfo[5].Mid(14);
+	compRemarks = compInfo[6].Mid(14);
+
+	UpdateData(FALSE);
 }
 
 //사용자 정보 읽기 버튼.
