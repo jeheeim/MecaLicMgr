@@ -15,6 +15,22 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 체크하면 12자리 6박스, 해제하면 8자리 4박스.
 */
 
+/*
+0710 app type 탭 기능 구현
+1. 프로그램이 실행되면 apptype.txt파일을 자동으로 읽어 프로그램의 종류를 파악하고
+
+2. app version 에 자동으로 버전들을 추가한다.
+*/
+
+/*
+0711 파일 입출력시 파일주소 위치 변수화
+1. apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
+*/
+
+/*
+0711 회사 정보파일 불러오기
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -65,14 +81,38 @@ END_MESSAGE_MAP()
 CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MECALICMGR_DIALOG, pParent)
 	, check_ipv(FALSE)
+	, m_strCbxApptype(_T(""))
+	, compCode(_T(""))
+	, compRemarks(_T(""))
+	, compMngCell(_T(""))
+	, compMngEmail(_T(""))
+	, compMngName(_T(""))
+	, compName(_T(""))
+	, compPhone(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	baseAddress = _T("");
+	apptypeAddress = _T("");
+	compDataAddress = _T("");
+	userDataAddress = _T("");
+	appVerAddresss = _T("");
 }
 
 void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CHECK_IPV6, check_ipv);
+	DDX_Control(pDX, IDC_COMBO_APPTYPE, m_cApptype);
+	//  DDX_CBString(pDX, IDC_COMBO_APPTYPE, apptypeSel);
+	DDX_Control(pDX, IDC_COMBO_VERSION, m_cVersion);
+	DDX_CBString(pDX, IDC_COMBO_APPTYPE, m_strCbxApptype);
+	DDX_Text(pDX, IDC_EDIT_COMP_CODE, compCode);
+	DDX_Text(pDX, IDC_EDIT_COMP_EXTRA, compRemarks);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_CELL, compMngCell);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_EMAIL, compMngEmail);
+	DDX_Text(pDX, IDC_EDIT_COMP_MNG_NAME, compMngName);
+	DDX_Text(pDX, IDC_EDIT_COMP_NAME, compName);
+	DDX_Text(pDX, IDC_EDIT_COMP_PHONE, compPhone);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -86,6 +126,7 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_READ_USER, &CMecaLicMgrDlg::OnButtReadUser)
 	ON_BN_CLICKED(IDC_BUTT_LIC_MAKE, &CMecaLicMgrDlg::OnButtLicMake)
 	ON_BN_CLICKED(IDC_BUTT_LIC_READ, &CMecaLicMgrDlg::OnButtLicRead)
+	ON_CBN_SELCHANGE(IDC_COMBO_APPTYPE, &CMecaLicMgrDlg::OnCbxApptype)
 END_MESSAGE_MAP()
 
 
@@ -121,9 +162,31 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	
+	// 주소의 공통부분인 배열 baseAddress 설정,
+	// apptype.txt, appversion.txt가 위치한 폴더,
+	// 회사 정보파일 폴더, 사용자 정보파일 폴더
+	baseAddress = "C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\";
+	apptypeAddress = baseAddress + "application\\apptype.txt";
+	appVerAddresss = baseAddress + "application\\version\\";
+	compDataAddress = baseAddress + "license\\comp";
+	userDataAddress = baseAddress + "license\\user";
 
+	// app type 콤보박스를 위해 apptype.txt파일 읽어오기.
+	CStdioFile src_file;
 
+	// 파일경로는 기본 변수로 따로 만들것
+	src_file.Open(apptypeAddress, CFile::modeRead);
 
+	CString str;
+
+	while (src_file.ReadString(str))
+	{
+		m_cApptype.AddString(str);
+	}
+
+	src_file.Close();
+	
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -230,7 +293,8 @@ void CMecaLicMgrDlg::OnButtReadAll()
 	}
 }
 
-// 회사 정보 읽기 버튼.
+// 회사 정보 읽기 버튼. 회사정보 파일에서 정보를 읽어와 앞부분을 잘라낸 뒤에
+// 불필요한 부분을 trim하고 화면에 띄운다.
 void CMecaLicMgrDlg::OnButtReadComp()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -241,16 +305,45 @@ void CMecaLicMgrDlg::OnButtReadComp()
 	// 열기창. txt파일과 모든파일중에 선택할 수 있다.
 	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
 
-	dlgFileOpen.m_ofn.lpstrInitialDir = (LPSTR)("C:\\Users\\jay\\Desktop\\MecaLicMgr\\data\\license\\comp");
+	// 읽기 창의 기본위치 지정
+	dlgFileOpen.m_ofn.lpstrInitialDir = compDataAddress;
 
-	if (dlgFileOpen.DoModal() == IDOK)
+	// 실패시 실패 문구 띄움.
+	if (dlgFileOpen.DoModal() != IDOK)
 	{
-		MessageBox("전체 파일을 여는데 성공했습니다!", "성공", NULL);
+		MessageBox("회사 파일을 여는데 실패했습니다!", "실패", NULL);
+
+		return;
 	}
-	else
+
+	// 파일에서 입력받을 정보배열
+	CString compInfo[7];
+
+	int i = 0;
+
+	CStdioFile compFile;
+
+	compFile.Open(dlgFileOpen.GetPathName(), CFile::modeRead);
+
+	while (i<7)
 	{
-		MessageBox("전체 파일을 여는데 실패했습니다!", "실패", NULL);
+		compFile.ReadString(compInfo[i]);
+
+		i++;
 	}
+
+	compFile.Close();
+
+	// 화면에 출력하기
+	compName = compInfo[0].Mid(14);
+	compCode = compInfo[1].Mid(14);
+	compPhone = compInfo[2].Mid(14);
+	compMngName = compInfo[3].Mid(14);
+	compMngEmail = compInfo[4].Mid(14);
+	compMngCell = compInfo[5].Mid(14);
+	compRemarks = compInfo[6].Mid(14);
+
+	UpdateData(FALSE);
 }
 
 //사용자 정보 읽기 버튼.
@@ -265,15 +358,15 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	CFileDialog dlgFileOpen(TRUE, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
 
 	// 유저폴더.
-	dlgFileOpen.m_ofn.lpstrInitialDir = (LPSTR)("C:\\Users\\jay\\Desktop\\MecaLicMgr\\data\\license\\user");
+	dlgFileOpen.m_ofn.lpstrInitialDir = userDataAddress;
 
 	if (dlgFileOpen.DoModal() == IDOK)
 	{
-		MessageBox("전체 파일을 여는데 성공했습니다!", "성공", NULL);
+		MessageBox("사용자 파일을 여는데 성공했습니다!", "성공", NULL);
 	}
 	else
 	{
-		MessageBox("전체 파일을 여는데 실패했습니다!", "실패", NULL);
+		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
 	}
 }
 
@@ -291,4 +384,31 @@ void CMecaLicMgrDlg::OnButtLicRead()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 	MessageBox("라이센스를 불러옵니다.", "읽기", NULL);
+}
+
+// 어플리케이션 종류를 선택하면 실행되는 함수
+// 매번 앱 버젼을 초기화하고 선택한 어플리케이션의 버전 목록파일을 읽어들여
+// 버전을 선택할 수 있는 콤보박스에 저장한다.
+void CMecaLicMgrDlg::OnCbxApptype()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_cVersion.ResetContent();
+	
+	UpdateData(TRUE);
+
+	CStdioFile src_file;
+	
+	CString fileAddress = appVerAddresss + m_strCbxApptype + ".txt";
+
+	// 파일경로는 기본 변수로 따로 만들것
+	src_file.Open(fileAddress, CFile::modeRead);
+
+	CString str;
+
+	while (src_file.ReadString(str))
+	{
+		m_cVersion.AddString(str);
+	}
+
+	src_file.Close();
 }
