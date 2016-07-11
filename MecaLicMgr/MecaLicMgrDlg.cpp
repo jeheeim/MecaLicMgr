@@ -23,12 +23,11 @@ OnButtReadAll, OnButtReadComp, OnButtReadUser 메소드
 */
 
 /*
-0711 파일 입출력시 파일주소 위치 변수화
-1. apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
-*/
-
-/*
-0711 회사 정보파일 불러오기
+0711
+1. 파일 입출력시 파일주소 위치 변수화
+apptype, appversion, 회사 정보, 사용자 정보 파일의 위치를 CString 변수화.
+2. 회사 정보파일 불러오기
+3. 사용자 정보파일 불러오기
 */
 
 #include "stdafx.h"
@@ -89,6 +88,13 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	, compMngName(_T(""))
 	, compName(_T(""))
 	, compPhone(_T(""))
+	, userCell(_T(""))
+	, userDept(_T(""))
+	, userEmail(_T(""))
+	, userName(_T(""))
+	, userPhone(_T(""))
+	, userRemarks(_T(""))
+	, userEnd(COleDateTime::GetCurrentTime())
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	baseAddress = _T("");
@@ -113,6 +119,15 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_COMP_MNG_NAME, compMngName);
 	DDX_Text(pDX, IDC_EDIT_COMP_NAME, compName);
 	DDX_Text(pDX, IDC_EDIT_COMP_PHONE, compPhone);
+	DDX_Text(pDX, IDC_EDIT_USER_CELL, userCell);
+	DDX_Text(pDX, IDC_EDIT_USER_DEPT, userDept);
+	DDX_Text(pDX, IDC_EDIT_USER_EMAIL, userEmail);
+	DDX_Text(pDX, IDC_EDIT_USER_NAME, userName);
+	DDX_Text(pDX, IDC_EDIT_USER_PHONE, userPhone);
+	DDX_Text(pDX, IDC_EDIT_USER_REMARKS, userRemarks);
+	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userStart);
+	DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_END, userEnd);
+	//  DDX_DateTimeCtrl(pDX, IDC_DATE_USER_LIC_START, userStart);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -360,14 +375,41 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	// 유저폴더.
 	dlgFileOpen.m_ofn.lpstrInitialDir = userDataAddress;
 
-	if (dlgFileOpen.DoModal() == IDOK)
-	{
-		MessageBox("사용자 파일을 여는데 성공했습니다!", "성공", NULL);
-	}
-	else
+	if (dlgFileOpen.DoModal() != IDOK)
 	{
 		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
+
+		return;
 	}
+
+	// 파일에서 입력받을 정보배열
+	CString userInfo[9];
+
+	int i = 0;
+
+	CStdioFile userFile;
+
+	userFile.Open(dlgFileOpen.GetPathName(), CFile::modeRead);
+
+	while (i<9)
+	{
+		userFile.ReadString(userInfo[i]);
+
+		i++;
+	}
+
+	userFile.Close();
+
+	// 화면에 출력하기
+	userDept = userInfo[0].Mid(14);
+	userName = userInfo[1].Mid(14);
+	userPhone = userInfo[2].Mid(14);
+	userCell = userInfo[3].Mid(14);
+	userEmail = userInfo[4].Mid(14);
+	userEnd.ParseDateTime(userInfo[5].Mid(14));
+	userRemarks = userInfo[6].Mid(14);
+
+	UpdateData(FALSE);
 }
 
 

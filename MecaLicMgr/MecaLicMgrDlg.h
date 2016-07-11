@@ -5,6 +5,7 @@
 #pragma once
 #include "afxmenubutton.h"
 #include "afxwin.h"
+#include "ATLComTime.h"
 
 // CMecaLicMgrDlg 대화 상자
 class CMecaLicMgrDlg : public CDialogEx
@@ -58,4 +59,13 @@ private:
 	CString compMngName;
 	CString compName;
 	CString compPhone;
+	CString userCell;
+	CString userDept;
+	CString userEmail;
+	CString userName;
+	CString userPhone;
+	CString userRemarks;
+//	COleDateTime userStart;
+	COleDateTime userEnd;
+//	COleDateTime userStart;
 };
