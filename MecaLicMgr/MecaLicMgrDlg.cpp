@@ -72,6 +72,7 @@ END_MESSAGE_MAP()
 CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MECALICMGR_DIALOG, pParent)
 	, check_ipv(FALSE)
+	, m_strCbxApptype(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -80,9 +81,10 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Check(pDX, IDC_CHECK_IPV6, check_ipv);
-	//  DDX_Control(pDX, IDC_MENU_APPTYPE, m_cApptype);
-	//  DDX_Control(pDX, IDC_SPLIT_APPTYPE, m_cApptype);
 	DDX_Control(pDX, IDC_COMBO_APPTYPE, m_cApptype);
+	//  DDX_CBString(pDX, IDC_COMBO_APPTYPE, apptypeSel);
+	DDX_Control(pDX, IDC_COMBO_VERSION, m_cVersion);
+	DDX_CBString(pDX, IDC_COMBO_APPTYPE, m_strCbxApptype);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -96,6 +98,7 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_READ_USER, &CMecaLicMgrDlg::OnButtReadUser)
 	ON_BN_CLICKED(IDC_BUTT_LIC_MAKE, &CMecaLicMgrDlg::OnButtLicMake)
 	ON_BN_CLICKED(IDC_BUTT_LIC_READ, &CMecaLicMgrDlg::OnButtLicRead)
+	ON_CBN_SELCHANGE(IDC_COMBO_APPTYPE, &CMecaLicMgrDlg::OnCbxApptype)
 END_MESSAGE_MAP()
 
 
@@ -131,13 +134,11 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-
-	m_cApptype.SetWindowText("App Type");
 	
 	CStdioFile src_file;
 
-	// ""에 apptype.txt 의 경로를 넣을것.
-	src_file.Open("", CFile::modeRead);
+	// 파일경로는 기본 변수로 따로 만들것
+	src_file.Open("C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\application\\apptype.txt", CFile::modeRead);
 
 	CString str;
 
@@ -315,4 +316,31 @@ void CMecaLicMgrDlg::OnButtLicRead()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 	MessageBox("라이센스를 불러옵니다.", "읽기", NULL);
+}
+
+// 어플리케이션 종류를 선택하면 실행되는 함수
+// 매번 앱 버젼을 초기화하고 선택한 어플리케이션의 버전 목록파일을 읽어들여
+// 버전을 선택할 수 있는 콤보박스에 저장한다.
+void CMecaLicMgrDlg::OnCbxApptype()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	m_cVersion.ResetContent();
+	
+	UpdateData(TRUE);
+
+	CStdioFile src_file;
+	
+	CString address = "C:\\Users\\Jay\\Documents\\GitHub\\MecaLicMgr\\data\\application\\version\\" + m_strCbxApptype + ".txt";
+
+	// 파일경로는 기본 변수로 따로 만들것
+	src_file.Open(address, CFile::modeRead);
+
+	CString str;
+
+	while (src_file.ReadString(str))
+	{
+		m_cVersion.AddString(str);
+	}
+
+	src_file.Close();
 }

@@ -44,7 +44,12 @@ public:
 	afx_msg void OnButtLicMake();
 	afx_msg void OnButtLicRead();
 private:
-//	CMFCMenuButton m_cApptype;
-//	CSplitButton m_cApptype;
+public:
 	CComboBox m_cApptype;
+private:
+	CComboBox m_cVersion;
+public:
+	afx_msg void OnCbxApptype();
+private:
+	CString m_strCbxApptype;
 };
