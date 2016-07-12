@@ -86,4 +86,5 @@ private:
 public:
 	afx_msg void OnButtAllSave();
 	afx_msg void OnButtAllSaveAs();
+	afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
 };

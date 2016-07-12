@@ -46,6 +46,8 @@ tab 순서 설정
 
 to do
 save 기능 추가
+도움말 추가
+intall manager 로 설치가 가능하도록 만들것
 */
 
 #include "stdafx.h"
@@ -183,6 +185,7 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_USER_SAVE_AS, &CMecaLicMgrDlg::OnButtUserSaveAs)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_ALL, &CMecaLicMgrDlg::OnButtAllSave)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_AS_ALL, &CMecaLicMgrDlg::OnButtAllSaveAs)
+	ON_WM_HELPINFO()
 END_MESSAGE_MAP()
 
 
@@ -742,4 +745,12 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 	allFile.Close();
 
 	MessageBox("저장에 성공했습니다!", "알림", NULL);
+}
+
+
+BOOL CMecaLicMgrDlg::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	return CDialogEx::OnHelpInfo(pHelpInfo);
 }
