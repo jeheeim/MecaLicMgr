@@ -39,6 +39,15 @@ license type 물어볼것
 tab 순서 설정
 */
 
+/*
+0712
+1. tab 순서 설정
+2. 열기/저장 시 취소버튼을 눌렀을때 생기는 에러 해결
+
+to do
+save 기능 추가
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -325,12 +334,21 @@ void CMecaLicMgrDlg::OnClickIpv6()
 void CMecaLicMgrDlg::OnButtReadAll()
 {
 	CString allInfo[15];
-
+	CString filePath;
 	int i = 0;
 
 	CStdioFile allFile;
 	
-	allFile.Open(openOrSave(true, compDataAddress), CFile::modeRead);
+	filePath = openOrSave(TRUE, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("회사 파일 읽기를 중지했습니다.","알림",NULL);
+
+		return;
+	}
+
+	allFile.Open(filePath, CFile::modeRead);
 
 	while (i<7)
 	{
@@ -341,7 +359,16 @@ void CMecaLicMgrDlg::OnButtReadAll()
 
 	allFile.Close();
 
-	allFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
+	filePath = openOrSave(TRUE, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("사용자 파일 읽기를 중지했습니다.", "알림", NULL);
+
+		return;
+	}
+
+	allFile.Open(filePath, CFile::modeRead);
 
 	while (i<15)
 	{
@@ -466,6 +493,7 @@ void CMecaLicMgrDlg::OnButtLicRead()
 }
 
 // 열기 혹은 저장을 수행하는 메소드. isOpen의 값이 true면 열기, false면 저장한다.
+// 취소버튼을 누르면 f를 리턴해 알수있도록 한다.
 CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
 {
 	// 열기 / 저장창. txt파일과 모든파일중에 선택할 수 있다.
@@ -475,11 +503,9 @@ CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
 	// 유저폴더.
 	dlgFileOpen.m_ofn.lpstrInitialDir = address;
 
-	if (dlgFileOpen.DoModal() != IDOK)
+	if (dlgFileOpen.DoModal() == IDCANCEL)
 	{
-		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
-
-		return NULL;
+		return "f";
 	}
 
 	return dlgFileOpen.GetPathName();
