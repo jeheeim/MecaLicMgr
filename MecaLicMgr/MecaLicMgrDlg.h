@@ -42,16 +42,20 @@ public:
 	afx_msg void OnButtReadUser();
 	afx_msg void OnButtLicMake();
 	afx_msg void OnButtLicRead();
+	afx_msg void OnButtCompSaveAs();
+	afx_msg void OnButtUserSaveAs();
 private:
 	BOOL check_ipv;
-	CComboBox m_cVersion;
 	CComboBox m_cApptype;
+	CComboBox m_cVersion;
 	CString m_strCbxApptype;
+
 	CString baseAddress;
 	CString apptypeAddress;
 	CString compDataAddress;
 	CString userDataAddress;
 	CString appVerAddresss;
+
 	CString compCode;
 	CString compRemarks;
 	CString compMngCell;
@@ -59,13 +63,27 @@ private:
 	CString compMngName;
 	CString compName;
 	CString compPhone;
-	CString userCell;
+
 	CString userDept;
-	CString userEmail;
 	CString userName;
 	CString userPhone;
-	CString userRemarks;
+	CString userCell;
+	CString userEmail;
 	COleDateTime userEnd;
+	CString userRemarks;
+
+	CString macAdd1;
+	CString macAdd2;
+	CString macAdd3;
+	CString macAdd4;
+	CString macAdd5;
+	CString macAdd6;
 	
 	CString openOrSave(BOOL isOpen, CString address);
+	CString getMacAdd(void);
+	void printMacAdd(CString macAddress);
+//	CButton idc_check_ipv;
+public:
+	afx_msg void OnButtAllSave();
+	afx_msg void OnButtAllSaveAs();
 };
