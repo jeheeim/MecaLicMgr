@@ -39,6 +39,17 @@ license type 물어볼것
 tab 순서 설정
 */
 
+/*
+0712
+1. tab 순서 설정
+2. 열기/저장 시 취소버튼을 눌렀을때 생기는 에러 해결
+
+to do
+save 기능 추가
+도움말 추가
+intall manager 로 설치가 가능하도록 만들것
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -156,6 +167,7 @@ void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_MAC6, macAdd6);
 	DDV_MaxChars(pDX, macAdd6, 2);
 	//  DDX_Control(pDX, IDC_CHECK_IPV6, idc_check_ipv);
+	DDX_Control(pDX, IDC_EDIT_MAC1, m_EditCtrMac1);
 }
 
 BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
@@ -174,6 +186,8 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_USER_SAVE_AS, &CMecaLicMgrDlg::OnButtUserSaveAs)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_ALL, &CMecaLicMgrDlg::OnButtAllSave)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_AS_ALL, &CMecaLicMgrDlg::OnButtAllSaveAs)
+	ON_WM_HELPINFO()
+	ON_EN_UPDATE(IDC_EDIT_MAC1, &CMecaLicMgrDlg::OnUpdateMac1)
 END_MESSAGE_MAP()
 
 
@@ -325,12 +339,21 @@ void CMecaLicMgrDlg::OnClickIpv6()
 void CMecaLicMgrDlg::OnButtReadAll()
 {
 	CString allInfo[15];
-
+	CString filePath;
 	int i = 0;
 
 	CStdioFile allFile;
 	
-	allFile.Open(openOrSave(true, compDataAddress), CFile::modeRead);
+	filePath = openOrSave(TRUE, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("회사 파일 읽기를 중지했습니다.","알림",NULL);
+
+		return;
+	}
+
+	allFile.Open(filePath, CFile::modeRead);
 
 	while (i<7)
 	{
@@ -341,7 +364,16 @@ void CMecaLicMgrDlg::OnButtReadAll()
 
 	allFile.Close();
 
-	allFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
+	filePath = openOrSave(TRUE, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("사용자 파일 읽기를 중지했습니다.", "알림", NULL);
+
+		return;
+	}
+
+	allFile.Open(filePath, CFile::modeRead);
 
 	while (i<15)
 	{
@@ -466,6 +498,7 @@ void CMecaLicMgrDlg::OnButtLicRead()
 }
 
 // 열기 혹은 저장을 수행하는 메소드. isOpen의 값이 true면 열기, false면 저장한다.
+// 취소버튼을 누르면 f를 리턴해 알수있도록 한다.
 CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
 {
 	// 열기 / 저장창. txt파일과 모든파일중에 선택할 수 있다.
@@ -475,11 +508,9 @@ CString CMecaLicMgrDlg::openOrSave(BOOL isOpen, CString address)
 	// 유저폴더.
 	dlgFileOpen.m_ofn.lpstrInitialDir = address;
 
-	if (dlgFileOpen.DoModal() != IDOK)
+	if (dlgFileOpen.DoModal() == IDCANCEL)
 	{
-		MessageBox("사용자 파일을 여는데 실패했습니다!", "실패", NULL);
-
-		return NULL;
+		return "f";
 	}
 
 	return dlgFileOpen.GetPathName();
@@ -716,4 +747,48 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 	allFile.Close();
 
 	MessageBox("저장에 성공했습니다!", "알림", NULL);
+}
+
+
+BOOL CMecaLicMgrDlg::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	return CDialogEx::OnHelpInfo(pHelpInfo);
+}
+
+void CMecaLicMgrDlg::OnUpdateMac1()
+{
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	// CDialogEx::OnInitDialog() 함수를 재지정 
+	//하여, IParam 마스크에 OR 연산하여 설정된 ENM_SCROLL 플래그를 지정하여 컨트롤에 EM_SETEVENTMASK 메시지를 보내지 않으면
+	// 편집 컨트롤이 바뀐 텍스트를 표시하려고 함을 나타냅니다.
+
+	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	UpdateData(TRUE);
+
+	TCHAR * tchar;
+	CString str = _T("");
+	int i;
+	int asc;
+
+	for (i = 0; i < macAdd1.GetLength(); i++)
+	{
+		str = macAdd1.Mid(i, 1).MakeUpper();
+		tchar = (TCHAR*)(LPCTSTR)str;
+
+		asc = __toascii(*tchar);
+
+		// 대문자 A-F, 숫자만 받는다. 그 외에는 삭제함.
+		if (!((asc >= 65 || asc <= 70) || (asc > 47 || asc < 58)))
+		{
+			macAdd1.Remove(*tchar);
+		}
+	}
+
+	UpdateData(FALSE);
+	
+	m_EditCtrMac1.SetSel(0, -1);
+	m_EditCtrMac1.SetSel(-1 - 1);
 }
