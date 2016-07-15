@@ -50,6 +50,11 @@ save 기능 추가
 intall manager 로 설치가 가능하도록 만들것
 */
 
+/*
+1. 읽기/저장 오류 수정
+2. 읽기/저장 필요없는 정보 삭제
+*/
+
 #include "stdafx.h"
 #include "MecaLicMgr.h"
 #include "MecaLicMgrDlg.h"
@@ -128,6 +133,14 @@ CMecaLicMgrDlg::CMecaLicMgrDlg(CWnd* pParent /*=NULL*/)
 	compDataAddress = _T("");
 	userDataAddress = _T("");
 	appVerAddresss = _T("");
+	compNameOriginal = _T("");
+	compCodeOriginal = _T("");
+	compPhoneOriginal = _T("");
+	compMngNameOriginal = _T("");
+	compMngEmailOriginal = _T("");
+	compMngCellOriginal = _T("");
+	compRemarksOriginal = _T("");
+	filePath = _T("");
 }
 
 void CMecaLicMgrDlg::DoDataExchange(CDataExchange* pDX)
@@ -186,8 +199,9 @@ BEGIN_MESSAGE_MAP(CMecaLicMgrDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTT_USER_SAVE_AS, &CMecaLicMgrDlg::OnButtUserSaveAs)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_ALL, &CMecaLicMgrDlg::OnButtAllSave)
 	ON_BN_CLICKED(IDC_BUTT_SAVE_AS_ALL, &CMecaLicMgrDlg::OnButtAllSaveAs)
-	ON_WM_HELPINFO()
+//	ON_WM_HELPINFO()
 	ON_EN_UPDATE(IDC_EDIT_MAC1, &CMecaLicMgrDlg::OnUpdateMac1)
+	ON_BN_CLICKED(IDC_BUTT_COMP_SAVE, &CMecaLicMgrDlg::OnButtCompSave)
 END_MESSAGE_MAP()
 
 
@@ -385,23 +399,23 @@ void CMecaLicMgrDlg::OnButtReadAll()
 	allFile.Close();
 
 	// 화면에 출력하기
-	compName = allInfo[0].Mid(14);
-	compCode = allInfo[1].Mid(14);
-	compPhone = allInfo[2].Mid(14);
-	compMngName = allInfo[3].Mid(14);
-	compMngEmail = allInfo[4].Mid(14);
-	compMngCell = allInfo[5].Mid(14);
-	compRemarks = allInfo[6].Mid(14);
+	compName = allInfo[0];
+	compCode = allInfo[1];
+	compPhone = allInfo[2];
+	compMngName = allInfo[3];
+	compMngEmail = allInfo[4];
+	compMngCell = allInfo[5];
+	compRemarks = allInfo[6];
 
-	userDept = allInfo[7].Mid(14);
-	userName = allInfo[8].Mid(14);
-	userPhone = allInfo[9].Mid(14);
-	userCell = allInfo[10].Mid(14);
-	userEmail = allInfo[11].Mid(14);
-	userEnd.ParseDateTime(allInfo[12].Mid(14));
-	userRemarks = allInfo[13].Mid(14);
+	userDept = allInfo[7];
+	userName = allInfo[8];
+	userPhone = allInfo[9];
+	userCell = allInfo[10];
+	userEmail = allInfo[11];
+	userEnd.ParseDateTime(allInfo[12]);
+	userRemarks = allInfo[13];
 
-	printMacAdd(allInfo[14].Mid(14));
+	printMacAdd(allInfo[14]);
 
 	UpdateData(FALSE);
 }
@@ -414,13 +428,23 @@ void CMecaLicMgrDlg::OnButtReadComp()
 		
 	// 파일에서 입력받을 정보배열
 	CString compInfo[7];
+	CString filePath;
 
 	int i = 0;
 
 	CStdioFile compFile;
 
+	filePath = openOrSave(true, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("사용자 파일 읽기를 중지했습니다.", "알림", NULL);
+
+		return;
+	}
+
 	// openOrSave 함수는 true 값을 입력받았을때 열기창을 실행하고 선택한 파일의 주소를 리턴한다.
-	compFile.Open(openOrSave(true, compDataAddress), CFile::modeRead);
+	compFile.Open(filePath, CFile::modeRead);
 
 	while (i<7)
 	{
@@ -432,15 +456,25 @@ void CMecaLicMgrDlg::OnButtReadComp()
 	compFile.Close();
 
 	// 화면에 출력하기
-	compName = compInfo[0].Mid(14);
-	compCode = compInfo[1].Mid(14);
-	compPhone = compInfo[2].Mid(14);
-	compMngName = compInfo[3].Mid(14);
-	compMngEmail = compInfo[4].Mid(14);
-	compMngCell = compInfo[5].Mid(14);
-	compRemarks = compInfo[6].Mid(14);
+	compName = compInfo[0];
+	compCode = compInfo[1];
+	compPhone = compInfo[2];
+	compMngName = compInfo[3];
+	compMngEmail = compInfo[4];
+	compMngCell = compInfo[5];
+	compRemarks = compInfo[6];
 
 	UpdateData(FALSE);
+
+	compNameOriginal = compName;
+	compCodeOriginal = compCode;
+	compPhoneOriginal = compPhoneOriginal;
+	compMngNameOriginal = compMngName;
+	compMngEmailOriginal = compMngEmail;
+	compMngCellOriginal = compMngCell;
+	compRemarksOriginal = compRemarks;
+
+	this->filePath = filePath;
 }
 
 //사용자 정보 읽기 버튼.
@@ -449,16 +483,26 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	
 	// 파일에서 입력받을 정보배열
-	CString userInfo[9];
+	CString userInfo[8];
+	CString filePath;
 
 	int i = 0;
 
 	CStdioFile userFile;
 
+	filePath = openOrSave(true, compDataAddress);
+
+	if (filePath == "f")
+	{
+		MessageBox("사용자 파일 읽기를 중지했습니다.", "알림", NULL);
+
+		return;
+	}
+
 	// openOrSave 함수는 true 값을 입력받았을때 열기창을 실행하고 선택한 파일의 주소를 리턴한다.
 	userFile.Open(openOrSave(true, userDataAddress), CFile::modeRead);
 
-	while (i<9)
+	while (i<8)
 	{
 		userFile.ReadString(userInfo[i]);
 
@@ -468,15 +512,15 @@ void CMecaLicMgrDlg::OnButtReadUser()
 	userFile.Close();
 
 	// 화면에 출력하기
-	userDept = userInfo[0].Mid(14);
-	userName = userInfo[1].Mid(14);
-	userPhone = userInfo[2].Mid(14);
-	userCell = userInfo[3].Mid(14);
-	userEmail = userInfo[4].Mid(14);
-	userEnd.ParseDateTime(userInfo[5].Mid(14));
-	userRemarks = userInfo[6].Mid(14);
+	userDept = userInfo[0];
+	userName = userInfo[1];
+	userPhone = userInfo[2];
+	userCell = userInfo[3];
+	userEmail = userInfo[4];
+	userEnd.ParseDateTime(userInfo[5]);
+	userRemarks = userInfo[6];
 
-	printMacAdd(userInfo[7].Mid(14));
+	printMacAdd(userInfo[7]);
 
 	UpdateData(FALSE);
 }
@@ -610,13 +654,13 @@ void CMecaLicMgrDlg::OnButtCompSaveAs()
 
 	UpdateData(true);
 
-	writeStr[0] = "Company Name: " + compName + "\n";
-	writeStr[1] = "Company Code: " + compCode + "\n";
-	writeStr[2] = "Company  TEL: " + compPhone + "\n";
-	writeStr[3] = "Admin   Name: " + compMngName + "\n";
-	writeStr[4] = "Admin e-mail: " + compMngEmail + "\n";
-	writeStr[5] = "Admin Mobile: " + compMngCell + "\n";
-	writeStr[6] = "Comp.Remarks: " + compRemarks + "\n";
+	writeStr[0] = compName + "\n";
+	writeStr[1] = compCode + "\n";
+	writeStr[2] = compPhone + "\n";
+	writeStr[3] = compMngName + "\n";
+	writeStr[4] = compMngEmail + "\n";
+	writeStr[5] = compMngCell + "\n";
+	writeStr[6] = compRemarks + "\n";
 
 	for (int i = 0; i < 7; i++)
 	{
@@ -624,6 +668,16 @@ void CMecaLicMgrDlg::OnButtCompSaveAs()
 	}
 
 	compFile.Close();
+
+	compNameOriginal = writeStr[0];
+	compCodeOriginal = writeStr[1];
+	compPhoneOriginal = writeStr[2];
+	compMngNameOriginal = writeStr[3];
+	compMngEmailOriginal = writeStr[4];
+	compMngCellOriginal = writeStr[5];
+	compRemarksOriginal = writeStr[6];
+
+	filePath = compDataPath;
 
 	MessageBox("저장에 성공했습니다!", "알림", NULL);
 }
@@ -633,7 +687,7 @@ void CMecaLicMgrDlg::OnButtUserSaveAs()
 {
 	CString userDataPath;
 	CFileException ex;
-	CString writeStr[9];
+	CString writeStr[8];
 
 	CString userMacAdd = getMacAdd();
 	CString userLicType;
@@ -647,15 +701,14 @@ void CMecaLicMgrDlg::OnButtUserSaveAs()
 
 	UpdateData(true);
 
-	writeStr[0] = "User   Dept.: " + userDept + "\n";
-	writeStr[1] = "User   Name : " + userName + "\n";
-	writeStr[2] = "User   Phone: " + userPhone + "\n";
-	writeStr[3] = "User  Mobile: " + userCell + "\n";
-	writeStr[4] = "User  e-mail: " + userEmail + "\n";
-	writeStr[5] = "Lic. Enddate: " + userEnd.Format(_T("%Y/%m/%d")) + "\n";
-	writeStr[6] = "User Remarks: " + userRemarks + "\n";
-	writeStr[7] = "MAC  Address: " + userMacAdd + "\n";
-	writeStr[8] = "License Type: " + userLicType + "\n";
+	writeStr[0] = userDept + "\n";
+	writeStr[1] = userName + "\n";
+	writeStr[2] = userPhone + "\n";
+	writeStr[3] = userCell + "\n";
+	writeStr[4] = userEmail + "\n";
+	writeStr[5] = userEnd.Format(_T("%Y/%m/%d")) + "\n";
+	writeStr[6] = userRemarks + "\n";
+	writeStr[7] = userMacAdd + "\n";
 
 	CStdioFile userFile;
 
@@ -686,7 +739,7 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 
 	CString allDataPath;
 	CFileException ex;
-	CString writeStr[9];
+	CString writeStr[8];
 	CStdioFile allFile;
 
 	allDataPath = openOrSave(FALSE, compDataAddress);
@@ -700,13 +753,13 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 
 	UpdateData(true);
 
-	writeStr[0] = "Company Name: " + compName + "\n";
-	writeStr[1] = "Company Code: " + compCode + "\n";
-	writeStr[2] = "Company  TEL: " + compPhone + "\n";
-	writeStr[3] = "Admin   Name: " + compMngName + "\n";
-	writeStr[4] = "Admin e-mail: " + compMngEmail + "\n";
-	writeStr[5] = "Admin Mobile: " + compMngCell + "\n";
-	writeStr[6] = "Comp.Remarks: " + compRemarks + "\n";
+	writeStr[0] = compName + "\n";
+	writeStr[1] = compCode + "\n";
+	writeStr[2] = compPhone + "\n";
+	writeStr[3] = compMngName + "\n";
+	writeStr[4] = compMngEmail + "\n";
+	writeStr[5] = compMngCell + "\n";
+	writeStr[6] = compRemarks + "\n";
 
 	for (int i = 0; i < 7; i++)
 	{
@@ -716,7 +769,6 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 	allFile.Close();
 
 	CString userMacAdd = getMacAdd();
-	CString userLicType;
 
 	allDataPath = openOrSave(FALSE, userDataAddress);
 
@@ -727,15 +779,14 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 
 	UpdateData(true);
 
-	writeStr[0] = "User   Dept.: " + userDept + "\n";
-	writeStr[1] = "User   Name : " + userName + "\n";
-	writeStr[2] = "User   Phone: " + userPhone + "\n";
-	writeStr[3] = "User  Mobile: " + userCell + "\n";
-	writeStr[4] = "User  e-mail: " + userEmail + "\n";
-	writeStr[5] = "Lic. Enddate: " + userEnd.Format(_T("%Y/%m/%d")) + "\n";
-	writeStr[6] = "User Remarks: " + userRemarks + "\n";
-	writeStr[7] = "MAC  Address: " + userMacAdd + "\n";
-	writeStr[8] = "License Type: " + userLicType + "\n";
+	writeStr[0] = userDept + "\n";
+	writeStr[1] = userName + "\n";
+	writeStr[2] = userPhone + "\n";
+	writeStr[3] = userCell + "\n";
+	writeStr[4] = userEmail + "\n";
+	writeStr[5] = userEnd.Format(_T("%Y/%m/%d")) + "\n";
+	writeStr[6] = userRemarks + "\n";
+	writeStr[7] = userMacAdd + "\n";
 
 	allFile.Open(allDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
 
@@ -747,14 +798,6 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 	allFile.Close();
 
 	MessageBox("저장에 성공했습니다!", "알림", NULL);
-}
-
-
-BOOL CMecaLicMgrDlg::OnHelpInfo(HELPINFO* pHelpInfo)
-{
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-
-	return CDialogEx::OnHelpInfo(pHelpInfo);
 }
 
 void CMecaLicMgrDlg::OnUpdateMac1()
@@ -791,4 +834,78 @@ void CMecaLicMgrDlg::OnUpdateMac1()
 	
 	m_EditCtrMac1.SetSel(0, -1);
 	m_EditCtrMac1.SetSel(-1 - 1);
+}
+
+// 읽기, 혹은 저장시에 입력된 초기회사 정보와 지금 변경된 사항을 비교, 저장여부를 결정한다.
+// 변경사항이 없다면 그냥 저장했다고 뜨게한다
+// 변경사항이 있다면 선택지를 제공한다.
+// 1. 기존에 입력된 파일 경로로 저장한다.
+// 2. 새로 저장한다.
+// 3. 취소
+void CMecaLicMgrDlg::OnButtCompSave()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	UpdateData(TRUE);
+
+	CString compDataPath;
+	CFileException ex;
+	CString writeStr[8];
+	CStdioFile compFile;
+
+	// 변경사항이 없는 경우
+	if (compName == compNameOriginal
+		&& compCode == compCodeOriginal
+		&& compPhone == compPhoneOriginal
+		&& compMngName == compMngNameOriginal
+		&& compMngEmail == compMngEmailOriginal
+		&& compMngCell == compMngCellOriginal
+		&& compRemarks == compRemarksOriginal)
+	{
+		MessageBox("변경사항이 없습니다!", "알림", NULL);
+		return;
+	}
+
+	if (filePath.GetLength() > 2)
+	{
+		int choice = MessageBox("새로 저장하시겠습니까?", "저장", MB_YESNOCANCEL);
+
+		// MB_YESNOCANCEL 에서 yes 는 6, no는 7, cancel은 2
+		switch (choice)
+		{
+		case 6:
+			compDataPath = openOrSave(FALSE, compDataAddress);
+
+			if (!compDataPath)
+			{
+				return;
+			}
+
+			compFile.Open(compDataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
+
+			UpdateData(true);
+
+			writeStr[0] = compName + "\n";
+			writeStr[1] = compCode + "\n";
+			writeStr[2] = compPhone + "\n";
+			writeStr[3] = compMngName + "\n";
+			writeStr[4] = compMngEmail + "\n";
+			writeStr[5] = compMngCell + "\n";
+			writeStr[6] = compRemarks + "\n";
+
+			for (int i = 0; i < 7; i++)
+			{
+				compFile.WriteString(writeStr[i]);
+			}
+
+			compFile.Close();
+
+			break;
+		case 7:
+			break;
+		case 2:
+			return;
+			break;
+		}
+	}
 }
