@@ -246,7 +246,12 @@ BOOL CMecaLicMgrDlg::OnInitDialog()
 	// 주소의 공통부분인 배열 baseAddress 설정,
 	// apptype.txt, appversion.txt가 위치한 폴더,
 	// 회사 정보파일 폴더, 사용자 정보파일 폴더
-	baseAddress = "C:\\Users\\Jay\\Desktop\\data\\";
+	char badd[512];
+	memset(badd, 0, 512);
+	SHGetSpecialFolderPath(NULL, badd, CSIDL_PERSONAL, FALSE);
+	
+	baseAddress.Format("%s",badd);
+	baseAddress += "\\LicenseManagerData\\data\\";
 	apptypeAddress = baseAddress + (CString)"application\\apptype.txt";
 	appVerAddresss = baseAddress + (CString)"application\\version\\";
 	compDataAddress = baseAddress + (CString)"license\\comp";
@@ -382,7 +387,7 @@ void CMecaLicMgrDlg::OnButtLicMake()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	MessageBox((LPCTSTR)"라이센스를 발급합니다.", (LPCTSTR)"발급", NULL);
+	MessageBox("라이센스를 발급합니다.", "발급", NULL);
 }
 
 
@@ -390,7 +395,7 @@ void CMecaLicMgrDlg::OnButtLicRead()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	MessageBox((LPCTSTR)"라이센스를 불러옵니다.", (LPCTSTR)"읽기", NULL);
+	MessageBox("라이센스를 불러옵니다.", "읽기", NULL);
 }
 
 // read
@@ -430,7 +435,7 @@ void CMecaLicMgrDlg::OnButtAllSaveAs()
 
 	saving(0, writeStr, allDataPath);
 
-	MessageBox((LPCTSTR)"저장에 성공했습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
 }
 
 void CMecaLicMgrDlg::OnButtCompSaveAs()
@@ -452,7 +457,7 @@ void CMecaLicMgrDlg::OnButtCompSaveAs()
 
 	compFilePathOriginal = compDataPath;
 
-	MessageBox((LPCTSTR)"저장에 성공했습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
 }
 
 void CMecaLicMgrDlg::OnButtUserSaveAs()
@@ -473,7 +478,7 @@ void CMecaLicMgrDlg::OnButtUserSaveAs()
 
 	userFilePathOriginal = userDataPath;
 
-	MessageBox((LPCTSTR)"저장에 성공했습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장에 성공했습니다!", "알림", NULL);
 }
 
 // save
@@ -489,7 +494,7 @@ void CMecaLicMgrDlg::OnButtAllSave()
 
 	if (allFilePathOriginal.GetLength() > 3)
 	{
-		int choice = MessageBox((LPCTSTR)"새로 저장하시겠습니까?", (LPCTSTR)"저장", MB_YESNOCANCEL);
+		int choice = MessageBox("새로 저장하시겠습니까?", "저장", MB_YESNOCANCEL);
 
 		// MB_YESNOCANCEL 에서 yes 는 6, no는 7, cancel은 2
 		switch (choice)
@@ -515,7 +520,7 @@ void CMecaLicMgrDlg::OnButtAllSave()
 
 	saving(0, writeStr, allDataPath);
 
-	MessageBox((LPCTSTR)"저장이 완료되었습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장이 완료되었습니다!", "알림", NULL);
 }
 
 // 읽기, 혹은 저장시에 입력된 초기회사 정보와 지금 변경된 사항을 비교, 저장여부를 결정한다.
@@ -535,7 +540,7 @@ void CMecaLicMgrDlg::OnButtCompSave()
 
 	if (compFilePathOriginal.GetLength() > 2)
 	{
-		int choice = MessageBox((LPCTSTR)"새로 저장하시겠습니까?", (LPCTSTR)"저장", MB_YESNOCANCEL);
+		int choice = MessageBox("새로 저장하시겠습니까?", "저장", MB_YESNOCANCEL);
 
 		// MB_YESNOCANCEL 에서 yes 는 6, no는 7, cancel은 2
 		switch (choice)
@@ -560,7 +565,7 @@ void CMecaLicMgrDlg::OnButtCompSave()
 
 	saving(1, writeStr, compDataPath);
 
-	MessageBox((LPCTSTR)"저장이 완료되었습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장이 완료되었습니다!", "알림", NULL);
 }
 
 void CMecaLicMgrDlg::OnButtUserSave()
@@ -574,7 +579,7 @@ void CMecaLicMgrDlg::OnButtUserSave()
 
 	if (userFilePathOriginal.GetLength() > 2)
 	{
-		int choice = MessageBox((LPCTSTR)"새로 저장하시겠습니까?", (LPCTSTR)"저장", MB_YESNOCANCEL);
+		int choice = MessageBox("새로 저장하시겠습니까?", "저장", MB_YESNOCANCEL);
 
 		// MB_YESNOCANCEL 에서 yes 는 6, no는 7, cancel은 2
 		switch (choice)
@@ -601,7 +606,7 @@ void CMecaLicMgrDlg::OnButtUserSave()
 
 	userFilePathOriginal = userDataPath;
 
-	MessageBox((LPCTSTR)"저장이 완료되었습니다!", (LPCTSTR)"알림", NULL);
+	MessageBox("저장이 완료되었습니다!", "알림", NULL);
 }
 
 
@@ -611,7 +616,7 @@ CString CMecaLicMgrDlg::openOrSaveDlg(BOOL isOpen, CString address)
 {
 	// 열기 / 저장창. txt파일과 모든파일중에 선택할 수 있다.
 	// true면 열기, false 면 저장한다.
-	CFileDialog dlgFileOpen(isOpen, (LPCTSTR)"TXT", NULL, OFN_FILEMUSTEXIST, (LPCTSTR)"메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
+	CFileDialog dlgFileOpen(isOpen, "TXT", NULL, OFN_FILEMUSTEXIST, "메모장(*.txt)|*.txt|모든파일(*.*)|*.*||", NULL);
 
 	// 유저폴더.
 	dlgFileOpen.m_ofn.lpstrInitialDir = address;
@@ -700,7 +705,7 @@ void CMecaLicMgrDlg::saving(int saveType, CString * writeStr, CString dataPath)
 		break;
 	case 1:
 		start = 0;
-		finish = 8;
+		finish = 7;
 		break;
 	case 2:
 		start = 7;
@@ -715,7 +720,7 @@ void CMecaLicMgrDlg::saving(int saveType, CString * writeStr, CString dataPath)
 
 	for (int i = start; i < finish; i++)
 	{
-		writeStr[i - start] = (*data[i]) + (CString)"\n";
+		writeStr[i - start] = (*data[i]) + "\n";
 	}
 
 	textFile.Open(dataPath, CFile::modeCreate | CFile::modeReadWrite, &ex);
@@ -763,7 +768,7 @@ void CMecaLicMgrDlg::reading(int readType, CString dataPath)
 
 	if (filePath == "f")
 	{
-		MessageBox(alert + " 파일 읽기를 중지했습니다.", (LPCTSTR)"알림", NULL);
+		MessageBox(alert + " 파일 읽기를 중지했습니다.", "알림", NULL);
 
 		return;
 	}
@@ -791,7 +796,7 @@ void CMecaLicMgrDlg::reading(int readType, CString dataPath)
 		originalData[i] = *data[i];
 	}
 
-	MessageBox(alert + " 파일 읽기를 성공했습니다.", (LPCTSTR)"알림", NULL);
+	MessageBox(alert + " 파일 읽기를 성공했습니다.", "알림", NULL);
 }
 
 void CMecaLicMgrDlg::OnUpdateMac1()
