@@ -33,33 +33,44 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
 public:
 	afx_msg void OnButtExit();
-	afx_msg void OnClickIpv6();
 	afx_msg void OnCbxApptype();
+
 	afx_msg void OnButtReadAll();
 	afx_msg void OnButtReadComp();
 	afx_msg void OnButtReadUser();
+
 	afx_msg void OnButtLicMake();
 	afx_msg void OnButtLicRead();
+
+	afx_msg void OnButtAllSaveAs();
 	afx_msg void OnButtCompSaveAs();
 	afx_msg void OnButtUserSaveAs();
+
 	afx_msg void OnButtAllSave();
-	afx_msg void OnButtAllSaveAs();
-	afx_msg void OnUpdateMac1();
 	afx_msg void OnButtCompSave();
+	afx_msg void OnButtUserSave();
+
+	afx_msg void OnUpdateMac1();
+	afx_msg void OnUpdateMac2();
+	afx_msg void OnUpdateMac3();
+	afx_msg void OnUpdateMac4();
+	afx_msg void OnUpdateMac5();
+	afx_msg void OnUpdateMac6();
+
 private:
-	BOOL check_ipv;
 	CComboBox m_cApptype;
 	CComboBox m_cVersion;
 	CString m_strCbxApptype;
-	CEdit m_EditCtrMac1;
 
 	CString baseAddress;
 	CString apptypeAddress;
 	CString compDataAddress;
 	CString userDataAddress;
 	CString appVerAddresss;
+	CString allDataAddress;
 
 	CString compCode;
 	CString compRemarks;
@@ -74,8 +85,10 @@ private:
 	CString userPhone;
 	CString userCell;
 	CString userEmail;
+	CString userEndDate;
 	COleDateTime userEnd;
 	CString userRemarks;
+	CString userMacAdd;
 
 	CString macAdd1;
 	CString macAdd2;
@@ -84,17 +97,29 @@ private:
 	CString macAdd5;
 	CString macAdd6;
 
-	CString compNameOriginal;
-	CString compCodeOriginal;
-	CString compPhoneOriginal;
-	CString compMngNameOriginal;
-	CString compMngEmailOriginal;
-	CString compMngCellOriginal;
-	CString compRemarksOriginal;
+	CString * macAdd[6];
 
-	CString filePath;
+	CEdit m_EditCtrMac1;
+	CEdit m_EditCtrMac2;
+	CEdit m_EditCtrMac3;
+	CEdit m_EditCtrMac4;
+	CEdit m_EditCtrMac5;
+	CEdit m_EditCtrMac6;
 
-	CString openOrSave(BOOL isOpen, CString address);
+	CEdit * macAddCtrl[6];
+
+	CString compFilePathOriginal;
+	CString userFilePathOriginal;
+	CString allFilePathOriginal;
+
+	CString * data[15];
+	CString originalData[15];
+
+	CString openOrSaveDlg(BOOL isOpen, CString address);
 	CString getMacAdd(void);
 	void printMacAdd(CString macAddress);
+	void saving(int saveType, CString *writeStr, CString dataPath);
+	void reading(int readType, CString dataPath);
+	void addAppversion();
+	void macAddControl(int boxNum);
 };
